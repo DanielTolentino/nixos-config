@@ -36,15 +36,16 @@
   boot.loader.systemd-boot.consoleMode = "0";
 
   # Define your hostname.
-  networking.hostName = "dev";
+  networking.hostName = "nix";
 
   # Set your time zone.
-  time.timeZone = "America/Los_Angeles";
+  time.timeZone = "America/Sao_Paulo";
 
   # The global useDHCP flag is deprecated, therefore explicitly set to false here.
   # Per-interface useDHCP will be mandatory in the future, so this generated config
   # replicates the default behaviour.
-  networking.useDHCP = false;
+    networking.interfaces.ens33.useDHCP = true;
+
 
   # Don't require password for sudo
   security.sudo.wheelNeedsPassword = false;
@@ -53,7 +54,16 @@
   virtualisation.docker.enable = true;
 
   # Select internationalisation properties.
-  i18n.defaultLocale = "en_US.UTF-8";
+  i18n.defaultLocale = "pt_BR.UTF-8";
+  console = {
+    font = "Lat2-Terminus16";
+    keyMap = "br-abnt2";
+  };
+  
+  # Configure keymap in X11
+  #.xserver.layout = "br";
+  # services.xserver.xkbOptions = "eurosign:e";
+
 
   # setup windowing environment
   services.xserver = {
