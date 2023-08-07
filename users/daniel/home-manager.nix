@@ -322,9 +322,6 @@ in {
     defaultCacheTtl = 31536000;
     maxCacheTtl = 31536000;
   };
-  services.vscode-server = {
-  	enable = true;
-  };
 
   xresources.extraConfig = builtins.readFile ./Xresources;
 
