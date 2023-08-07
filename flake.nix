@@ -71,7 +71,7 @@
     };
 
     nixosConfigurations.vm-intel = mkVM "vm-intel" rec {
-      inherit nixpkgs home-manager overlays;
+      inherit nixpkgs home-manager vscode-server overlays;
       system = "x86_64-linux";
       user   = "daniel";
     };
