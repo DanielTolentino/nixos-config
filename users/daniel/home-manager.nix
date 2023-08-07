@@ -20,6 +20,7 @@ in {
 
   xdg.enable = true;
   fonts.fontconfig.enable = true;
+  vscode-server.enable = true;
   
   
   #---------------------------------------------------------------------
