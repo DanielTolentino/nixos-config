@@ -34,7 +34,6 @@
 
     # Other packages
     zig.url = "github:mitchellh/zig-overlay";
-    vscode-server.url = "github:nix-community/nixos-vscode-server";
   };
 
   outputs = { self, nixpkgs, home-manager, vscode-server,  darwin, ... }@inputs: let
@@ -45,7 +44,6 @@
     overlays = [
       inputs.neovim-nightly-overlay.overlay
       inputs.zig.overlays.default
-      inputs.vscode-server
     ];
   in {
     nixosConfigurations.vm-aarch64 = mkVM "vm-aarch64" {
