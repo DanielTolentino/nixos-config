@@ -45,6 +45,7 @@
     overlays = [
       inputs.neovim-nightly-overlay.overlay
       inputs.zig.overlays.default
+      inputs.vscode-server
     ];
   in {
     nixosConfigurations.vm-aarch64 = mkVM "vm-aarch64" {
