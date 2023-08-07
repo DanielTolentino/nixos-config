@@ -54,6 +54,7 @@ in {
     pkgs.libGL
     pkgs.libGLU
     pkgs.libglibutil
+    pkgs.glibc
 
     pkgs.iosevka
     (pkgs.nerdfonts.override { fonts = [ "FiraCode" "DroidSansMono" ]; })
