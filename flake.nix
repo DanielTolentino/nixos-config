@@ -36,7 +36,7 @@
     zig.url = "github:mitchellh/zig-overlay";
   };
 
-  outputs = { self, nixpkgs, home-manager, vscode-server,  darwin, ... }@inputs: let
+  outputs = { self, nixpkgs, home-manager,  darwin, ... }@inputs: let
     mkDarwin = import ./lib/mkdarwin.nix;
     mkVM = import ./lib/mkvm.nix;
 
