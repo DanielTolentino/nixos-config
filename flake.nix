@@ -71,9 +71,15 @@
     };
 
     nixosConfigurations.vm-intel = mkVM "vm-intel" rec {
-      inherit nixpkgs home-manager vscode-server overlays;
+      inherit nixpkgs home-manager overlays;
       system = "x86_64-linux";
       user   = "daniel";
+      modules = [
+              vscode-server.nixosModules.default
+              ({ config, pkgs, ... }: {
+                services.vscode-server.enable = true;
+              })
+            ];
     };
 
     darwinConfigurations.macbook-pro-m1 = mkDarwin "macbook-pro-m1" {
