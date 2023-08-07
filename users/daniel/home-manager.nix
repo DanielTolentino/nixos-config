@@ -1,3 +1,4 @@
+
 { config, lib, pkgs, ... }:
 
 let
@@ -18,7 +19,9 @@ in {
   home.stateVersion = "18.09";
 
   xdg.enable = true;
-
+  fonts.fontconfig.enable = true;
+  
+  
   #---------------------------------------------------------------------
   # Packages
   #---------------------------------------------------------------------
@@ -35,9 +38,25 @@ in {
     pkgs.ripgrep
     pkgs.tree
     pkgs.watch
-
+    pkgs.micro
+    pkgs.xfce.thunar
+    #pkgs.gnome.gedit
+    pkgs.xorg.xrandr
+    pkgs.arandr
+    pkgs.neofetch
+	pkgs.git-lfs
     pkgs.gopls
     pkgs.zigpkgs.master
+
+    pkgs.xorg.libX11
+    pkgs.xorg.libX11.dev
+    pkgs.xorg.libXi
+    pkgs.libGL
+    pkgs.libGLU
+    pkgs.libglibutil
+
+    pkgs.iosevka
+    (pkgs.nerdfonts.override { fonts = [ "FiraCode" "DroidSansMono" ]; })
 
     # Node is required for Copilot.vim
     pkgs.nodejs
@@ -62,9 +81,9 @@ in {
   #---------------------------------------------------------------------
 
   home.sessionVariables = {
-    LANG = "en_US.UTF-8";
-    LC_CTYPE = "en_US.UTF-8";
-    LC_ALL = "en_US.UTF-8";
+    LANG = "pt_BR.UTF-8";
+    LC_CTYPE = "pt_BR.UTF-8";
+    LC_ALL = "pt_BR.UTF-8";
     EDITOR = "nvim";
     PAGER = "less -FirSwX";
     MANPAGER = "${manpager}/bin/manpager";
@@ -76,8 +95,8 @@ in {
   xdg.configFile."i3/config".text = builtins.readFile ./i3;
   xdg.configFile."rofi/config.rasi".text = builtins.readFile ./rofi;
   xdg.configFile."devtty/config".text = builtins.readFile ./devtty;
-
-  # Rectangle.app. This has to be imported manually using the app.
+  xdg.configFile."neofetch/config.conf".text = builtins.readFile ./neofetch.conf;
+    # Rectangle.app. This has to be imported manually using the app.
   xdg.configFile."rectangle/RectangleConfig.json".text = builtins.readFile ./RectangleConfig.json;
 
   # tree-sitter parsers
@@ -92,7 +111,9 @@ in {
   #---------------------------------------------------------------------
   # Programs
   #---------------------------------------------------------------------
-
+  programs.git.lfs = {
+  	enable = true;
+  };
   programs.gpg.enable = !isDarwin;
 
   programs.bash = {
@@ -217,14 +238,6 @@ in {
     settings = {
       env.TERM = "xterm-256color";
 
-      key_bindings = [
-        { key = "K"; mods = "Command"; chars = "ClearHistory"; }
-        { key = "V"; mods = "Command"; action = "Paste"; }
-        { key = "C"; mods = "Command"; action = "Copy"; }
-        { key = "Key0"; mods = "Command"; action = "ResetFontSize"; }
-        { key = "Equals"; mods = "Command"; action = "IncreaseFontSize"; }
-        { key = "Subtract"; mods = "Command"; action = "DecreaseFontSize"; }
-      ];
     };
   };
 
@@ -312,11 +325,4 @@ in {
 
   xresources.extraConfig = builtins.readFile ./Xresources;
 
-  # Make cursor not tiny on HiDPI screens
-  home.pointerCursor = lib.mkIf isLinux {
-    name = "Vanilla-DMZ";
-    package = pkgs.vanilla-dmz;
-    size = 128;
-    x11.enable = true;
-  };
 }

@@ -1,129 +1,91 @@
+# This is based on the official vmware-guest module, but modified
+# for aarch64 to disable certain features and add support. I'm unsure
+# how to upstream this because I just don't use certain features... maybe
+# making them toggle-able? I'm not sure.
+
 { config, lib, pkgs, ... }:
 
 with lib;
 
 let
-  prl-tools = config.hardware.parallels.package;
-  aarch64 = pkgs.stdenv.hostPlatform.system == "aarch64-linux";
+  cfg = config.virtualisation.vmware.guest;
+  open-vm-tools = if cfg.headless then pkgs.open-vm-tools-headless else pkgs.open-vm-tools;
+  xf86inputvmmouse = pkgs.xorg.xf86inputvmmouse;
 in
-
 {
+  imports = [
+    (mkRenamedOptionModule [ "services" "vmwareGuest" ] [ "virtualisation" "vmware" "guest" ])
+  ];
 
-  options = {
-    hardware.parallels = {
-
-      enable = mkOption {
-        type = types.bool;
-        default = false;
-        description = ''
-          This enables Parallels Tools for Linux guests, along with provided
-          video, mouse and other hardware drivers.
-        '';
-      };
-
-      autoMountShares = mkOption {
-        type = types.bool;
-        default = true;
-        description = ''
-          Control prlfsmountd service. When this service is running, shares can not be manually
-          mounted through `mount -t prl_fs ...` as this service will remount and trample any set options.
-          Recommended to enable for simple file sharing, but extended share use such as for code should
-          disable this to manually mount shares.
-        '';
-      };
-
-      package = mkOption {
-        type = types.nullOr types.package;
-        default = config.boot.kernelPackages.prl-tools;
-        defaultText = "config.boot.kernelPackages.prl-tools";
-        example = literalExpression "config.boot.kernelPackages.prl-tools";
-        description = ''
-          Defines which package to use for prl-tools. Override to change the version.
-        '';
-      };
+  options.virtualisation.vmware.guest = {
+    enable = mkEnableOption "VMWare Guest Support";
+    headless = mkOption {
+      type = types.bool;
+      default = false;
+      description = "Whether to disable X11-related features.";
     };
-
   };
 
-  config = mkIf config.hardware.parallels.enable {
-    services.udev.packages = [ prl-tools ];
+  config = mkIf cfg.enable {
+    assertions = [ {
+      assertion = pkgs.stdenv.isi686 || pkgs.stdenv.isx86_64 || pkgs.stdenv.isAarch64;
+      message = "VMWare guest is not currently supported on ${pkgs.stdenv.hostPlatform.system}";
+    } ];
 
-    environment.systemPackages = [ prl-tools ];
+    boot.initrd.availableKernelModules = [ "mptspi" ];
+    # boot.initrd.kernelModules = [ "vmw_pvscsi" ];
 
-    boot.extraModulePackages = [ prl-tools ];
+    environment.systemPackages = [ open-vm-tools ];
 
-    boot.kernelModules = [ "prl_fs" "prl_fs_freeze" "prl_tg" ] ++ optional aarch64 "prl_notifier";
-
-    # services.timesyncd.enable = false;
-
-    systemd.services.prltoolsd = {
-      description = "Parallels Tools' service";
-      wantedBy = [ "multi-user.target" ];
-      serviceConfig = {
-        ExecStart = "${prl-tools}/bin/prltoolsd -f";
-        PIDFile = "/var/run/prltoolsd.pid";
+    systemd.services.vmware =
+      { description = "VMWare Guest Service";
+        wantedBy = [ "multi-user.target" ];
+        after = [ "display-manager.service" ];
+        unitConfig.ConditionVirtualization = "vmware";
+        serviceConfig.ExecStart = "${open-vm-tools}/bin/vmtoolsd";
       };
+
+    # Mount the vmblock for drag-and-drop and copy-and-paste.
+    systemd.mounts = [
+      {
+        description = "VMware vmblock fuse mount";
+        documentation = [ "https://github.com/vmware/open-vm-tools/blob/master/open-vm-tools/vmblock-fuse/design.txt" ];
+        unitConfig.ConditionVirtualization = "vmware";
+        what = "${open-vm-tools}/bin/vmware-vmblock-fuse";
+        where = "/run/vmblock-fuse";
+        type = "fuse";
+        options = "subtype=vmware-vmblock,default_permissions,allow_other";
+        wantedBy = [ "multi-user.target" ];
+      }
+    ];
+
+    security.wrappers.vmware-user-suid-wrapper =
+      { setuid = true;
+        owner = "root";
+        group = "root";
+        source = "${open-vm-tools}/bin/vmware-user-suid-wrapper";
+      };
+
+    environment.etc.vmware-tools.source = "${open-vm-tools}/etc/vmware-tools/*";
+
+    services.xserver = mkIf (!cfg.headless) {
+      # TODO: does not build on aarch64
+      # modules = [ xf86inputvmmouse ];
+
+      config = ''
+          Section "InputClass"
+            Identifier "VMMouse"
+            MatchDevicePath "/dev/input/event*"
+            MatchProduct "ImPS/2 Generic Wheel Mouse"
+            Driver "vmmouse"
+          EndSection
+        '';
+
+      displayManager.sessionCommands = ''
+          ${open-vm-tools}/bin/vmware-user-suid-wrapper
+        '';
     };
 
-    systemd.services.prlfsmountd = mkIf config.hardware.parallels.autoMountShares {
-      description = "Parallels Shared Folders Daemon";
-      wantedBy = [ "multi-user.target" ];
-      serviceConfig = rec {
-        ExecStart = "${prl-tools}/sbin/prlfsmountd ${PIDFile}";
-        ExecStartPre = "${pkgs.coreutils}/bin/mkdir -p /media";
-        ExecStopPost = "${prl-tools}/sbin/prlfsmountd -u";
-        PIDFile = "/run/prlfsmountd.pid";
-      };
-    };
-
-    systemd.services.prlshprint = {
-      description = "Parallels Shared Printer Tool";
-      wantedBy = [ "multi-user.target" ];
-      bindsTo = [ "cups.service" ];
-      serviceConfig = {
-        Type = "forking";
-        ExecStart = "${prl-tools}/bin/prlshprint";
-      };
-    };
-
-    systemd.user.services = {
-      prlcc = {
-        description = "Parallels Control Center";
-        wantedBy = [ "graphical-session.target" ];
-        serviceConfig = {
-          ExecStart = "${prl-tools}/bin/prlcc";
-        };
-      };
-      prldnd = {
-        description = "Parallels Control Center";
-        wantedBy = [ "graphical-session.target" ];
-        serviceConfig = {
-          ExecStart = "${prl-tools}/bin/prldnd";
-        };
-      };
-      prlcp = {
-        description = "Parallels CopyPaste Tool";
-        wantedBy = [ "graphical-session.target" ];
-        serviceConfig = {
-          ExecStart = "${prl-tools}/bin/prlcp";
-          Restart = "always";
-        };
-      };
-      prlsga = {
-        description = "Parallels Shared Guest Applications Tool";
-        wantedBy = [ "graphical-session.target" ];
-        serviceConfig = {
-          ExecStart = "${prl-tools}/bin/prlsga";
-        };
-      };
-      prlshprof = {
-        description = "Parallels Shared Profile Tool";
-        wantedBy = [ "graphical-session.target" ];
-        serviceConfig = {
-          ExecStart = "${prl-tools}/bin/prlshprof";
-        };
-      };
-    };
-
+    services.udev.packages = [ open-vm-tools ];
   };
 }

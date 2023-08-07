@@ -52,6 +52,7 @@
 
   # Virtualization settings
   virtualisation.docker.enable = true;
+  virtualisation.vmware.guest.enable = true;
 
   # Select internationalisation properties.
   i18n.defaultLocale = "pt_BR.UTF-8";
@@ -61,17 +62,14 @@
   };
   
   # Configure keymap in X11
-  #.xserver.layout = "br";
-  # services.xserver.xkbOptions = "eurosign:e";
-
-
-  # setup windowing environment
+  #xserver.layout = "br";
+  #services.xserver.xkbOptions = "eurosign:e"; # setup windowing environment
   services.xserver = {
     enable = true;
-    layout = "us";
-    dpi = 220;
+    layout = "br";
+    dpi = 96;
 
-    desktopManager = {
+     desktopManager = {
       xterm.enable = false;
       wallpaper.mode = "fill";
     };
@@ -80,18 +78,18 @@
       defaultSession = "none+i3";
       lightdm.enable = true;
 
-      # AARCH64: For now, on Apple Silicon, we must manually set the
-      # display resolution. This is a known issue with VMware Fusion.
-      sessionCommands = ''
-        ${pkgs.xorg.xset}/bin/xset r rate 200 40
-      '';
-    };
+    # AARCH64: For now, on Apple Silicon, we must manually set the
+            # display resolution. This is a known issue with VMware Fusion.
+            sessionCommands = ''
+              ${pkgs.xorg.xset}/bin/xset r rate 200 40
+            '';
+          };
 
     windowManager = {
       i3.enable = true;
     };
   };
-
+  
   # Enable tailscale. We manually authenticate when we want with
   # "sudo tailscale up". If you don't use tailscale, you should comment
   # out or delete all of this.
@@ -128,9 +126,9 @@
 
     # For hypervisors that support auto-resizing, this script forces it.
     # I've noticed not everyone listens to the udev events so this is a hack.
-    (writeShellScriptBin "xrandr-auto" ''
-      xrandr --output Virtual-1 --auto
-    '')
+    #(writeShellScriptBin "xrandr-auto" ''
+     # xrandr --output Virtual-1 --auto
+   # '')
   ] ++ lib.optionals (currentSystemName == "vm-aarch64") [
     # This is needed for the vmware user tools clipboard to work.
     # You can test if you don't need this by deleting this and seeing
