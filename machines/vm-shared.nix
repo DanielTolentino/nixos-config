@@ -67,7 +67,8 @@
   services.xserver = {
     enable = true;
     layout = "br";
-    dpi = 96;
+    dpi = 120;
+    resolutions = [ { x = 1920; y = 1080; } { x = 1024; y = 786; } ];
 
      desktopManager = {
       xterm.enable = false;
@@ -123,7 +124,21 @@
     niv
     rxvt_unicode
     xclip
-
+    xorg.libX11
+    xorg.libX11.dev
+    xorg.libXi
+    libGL
+    libGLU
+    libglibutil
+    glibc
+    zlib
+    vulkan-tools
+    glslang # or shaderc
+	vulkan-headers
+    vulkan-loader
+    vulkan-validation-layers
+    glibc
+    gcc
     # For hypervisors that support auto-resizing, this script forces it.
     # I've noticed not everyone listens to the udev events so this is a hack.
     #(writeShellScriptBin "xrandr-auto" ''
