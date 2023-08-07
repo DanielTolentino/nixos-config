@@ -9,6 +9,7 @@ nixpkgs.lib.nixosSystem rec {
   	vscode-server.nixosModules.default
     ({ config, pkgs, ... }: {
     services.vscode-server.enable = true;
+    }
     # Apply our overlays. Overlays are keyed by system type so we have
     # to go through and apply our system type. We do this first so
     # the overlays are available globally.
