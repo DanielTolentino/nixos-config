@@ -19,7 +19,6 @@ in {
 
   xdg.enable = true;
   fonts.fontconfig.enable = true;
-  services.vscode-server.enable = true;
   
   
   #---------------------------------------------------------------------
@@ -322,6 +321,9 @@ in {
     # cache the keys forever so we don't get asked for a password
     defaultCacheTtl = 31536000;
     maxCacheTtl = 31536000;
+  };
+  services.vscode-server = {
+  	enable = true;
   };
 
   xresources.extraConfig = builtins.readFile ./Xresources;

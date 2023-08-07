@@ -383,7 +383,7 @@
         "url": "https://github.com/ziglang/zig.vim/archive/0c4f965468259ab6e47fd7c6b2127583a8860eb1.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
-    "nixos-vscode-server"{
+    "vscode-server"{
     	"branch": "master",
         "description": "Visual Studio Code Server support in NixOS",
         "homepage": null,

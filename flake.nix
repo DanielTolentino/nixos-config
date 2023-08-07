@@ -34,9 +34,10 @@
 
     # Other packages
     zig.url = "github:mitchellh/zig-overlay";
+    vscode-server.url = "github:nix-community/nixos-vscode-server";
   };
 
-  outputs = { self, nixpkgs, home-manager,  darwin, ... }@inputs: let
+  outputs = { self, nixpkgs, home-manager, vscode-server,  darwin, ... }@inputs: let
     mkDarwin = import ./lib/mkdarwin.nix;
     mkVM = import ./lib/mkvm.nix;
 
