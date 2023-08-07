@@ -5,9 +5,6 @@ let
   sources = import ../../nix/sources.nix;
   isDarwin = pkgs.stdenv.isDarwin;
   isLinux = pkgs.stdenv.isLinux;
-  imports = [
-    "${fetchTarball "https://github.com/msteen/nixos-vscode-server/tarball/master"}/modules/vscode-server/home.nix"
-  ];
   # For our MANPAGER env var
   # https://github.com/sharkdp/bat/issues/1145
   manpager = (pkgs.writeShellScriptBin "manpager" (if isDarwin then ''
@@ -22,7 +19,7 @@ in {
 
   xdg.enable = true;
   fonts.fontconfig.enable = true;
-  vscode-server.enable = true;
+  services.vscode-server.enable = true;
   
   
   #---------------------------------------------------------------------
