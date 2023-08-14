@@ -324,5 +324,13 @@ in {
   };
 
   xresources.extraConfig = builtins.readFile ./Xresources;
+  
+  # Make cursor not tiny on HiDPI screens
+  home.pointerCursor = lib.mkIf isLinux {
+    name = "Vanilla-DMZ";
+    package = pkgs.vanilla-dmz;
+    size = 128;
+    x11.enable = true;
+  };
 
 }
