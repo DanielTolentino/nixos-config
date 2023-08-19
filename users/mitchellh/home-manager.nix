@@ -27,6 +27,7 @@ in {
   # per-project flakes sourced with direnv and nix-shell, so this is
   # not a huge list.
   home.packages = [
+    pkgs.asciinema
     pkgs.bat
     pkgs.fd
     pkgs.fzf
@@ -41,11 +42,6 @@ in {
 
     # Node is required for Copilot.vim
     pkgs.nodejs
-
-    (pkgs.python3.withPackages (p: with p; [
-      ipython
-      jupyter
-    ]))
   ] ++ (lib.optionals isDarwin [
     # This is automatically setup on Linux
     pkgs.cachix
@@ -175,6 +171,7 @@ in {
       signByDefault = true;
     };
     aliases = {
+      cleanup = "!git branch --merged | grep  -v '\\*\\|master\\|develop' | xargs -n 1 -r git branch -d";
       prettylog = "log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(r) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative";
       root = "rev-parse --show-toplevel";
     };
